@@ -7,6 +7,18 @@ Unlock multi freeform limits for MIUI / HyperOS devices
 
 ---
 
+### Build
+
+```bash
+git clone --recurse-submodules git@github.com:YifePlayte/MaxFreeForm.git
+# 或已有克隆：
+git submodule update --init --recursive
+```
+
+`native-hook-kit` submodule 内包含固定版本的 LSPlt AAR，构建不需要额外下载 LSPlt 或部署 sibling 目录。
+
+---
+
 ### 第三方开源引用 / Third-party open source references
 
 ##### Apache License 2.0
@@ -20,6 +32,10 @@ Unlock multi freeform limits for MIUI / HyperOS devices
 ##### MIT License
 
 [lingqiqi5211/EzHookTool](https://github.com/lingqiqi5211/EzHookTool)
+
+##### GNU Lesser General Public License v3.0
+
+[LSPosed/LSPlt](https://github.com/LSPosed/LSPlt)
 
 ##### GNU General Public License v3.0
 

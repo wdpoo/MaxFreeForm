@@ -10,6 +10,7 @@ android {
     compileSdk = 37
 
     namespace = "com.yifeplayte.maxfreeform"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.yifeplayte.maxfreeform"
@@ -17,6 +18,17 @@ android {
         targetSdk = 37
         versionCode = 28
         versionName = "4.1.0"
+
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DANDROID_STL=c++_static")
+                targets += "maxfreeform_native"
+            }
+        }
     }
 
     buildTypes {
@@ -38,7 +50,15 @@ android {
         generateLocaleConfig = true
     }
 
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
     packaging {
+        jniLibs.useLegacyPackaging = false
         resources {
             excludes += "/kotlin/**"
             excludes += "/*.txt"
@@ -50,6 +70,7 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+        prefab = true
     }
 }
 
@@ -79,5 +100,6 @@ dependencies {
     implementation("top.yukonga.miuix.kmp:miuix-ui-android:0.9.4")
     implementation("top.yukonga.miuix.kmp:miuix-preference-android:0.9.4")
     implementation("top.yukonga.miuix.kmp:miuix-blur-android:0.9.4")
+    implementation("org.lsposed.lsplt:lsplt-standalone:2.1.1-7d609ac-compat")
     implementation("top.yukonga.miuix.kmp:miuix-icons-android:0.9.4")
 }

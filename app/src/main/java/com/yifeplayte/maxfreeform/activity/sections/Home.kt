@@ -7,12 +7,11 @@ import androidx.compose.ui.unit.dp
 import com.yifeplayte.maxfreeform.R
 import com.yifeplayte.maxfreeform.activity.ui.SPSwitch
 import com.yifeplayte.maxfreeform.activity.ui.SectionTitle
-import com.yifeplayte.maxfreeform.utils.Build.HYPER_OS_VERSION_CODE
 import top.yukonga.miuix.kmp.basic.Card
 
 fun LazyListScope.home() {
-    // HyperOS 4 的 com.miui.home 是 native 进程，不加载 Java hook
-    if (HYPER_OS_VERSION_CODE >= 4) return
+    // HyperOS 4 的 com.miui.home 是 native 进程，Java hook 不加载；该开关由
+    // NativeConfigEndpoint 转交给 native 补丁，因此两代桌面共用同一个 key。
     item {
         SectionTitle(
             titleId = R.string.miui_home,
