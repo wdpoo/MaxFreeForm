@@ -1,33 +1,22 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     namespace = "com.yifeplayte.maxfreeform"
 
     defaultConfig {
         applicationId = "com.yifeplayte.maxfreeform"
-        minSdk = 31
-        targetSdk = 34
+        minSdk = 33
+        targetSdk = 37
         versionCode = 28
         versionName = "4.1.0"
-
-        applicationVariants.configureEach {
-            outputs.configureEach {
-                if (this is BaseVariantOutputImpl) {
-                    outputFileName = outputFileName.replace("app", rootProject.name)
-                        .replace(Regex("debug|release"), versionName)
-                }
-            }
-        }
     }
 
     buildTypes {
@@ -58,19 +47,17 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
-
     buildFeatures {
         buildConfig = true
+        compose = true
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("${rootProject.name}-${output.versionName.get()}.apk")
+        }
     }
 }
 
@@ -78,6 +65,15 @@ dependencies {
     compileOnly("de.robv.android.xposed:api:82")
     implementation("com.github.kyuubiran:EzXHelper:2.2.1")
     implementation("io.github.ranlee1:jpinyin:1.0.1")
-    implementation("me.zhanghai.android.appiconloader:appiconloader:1.5.0")
-    implementation(project(":blockmiui"))
+
+    implementation("androidx.core:core-ktx:1.18.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.compose.foundation:foundation-android:1.12.0")
+    implementation("androidx.compose.runtime:runtime-android:1.12.0")
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
+
+    implementation("top.yukonga.miuix.kmp:miuix-ui-android:0.9.4")
+    implementation("top.yukonga.miuix.kmp:miuix-preference-android:0.9.4")
+    implementation("top.yukonga.miuix.kmp:miuix-blur-android:0.9.4")
+    implementation("top.yukonga.miuix.kmp:miuix-icons-android:0.9.4")
 }

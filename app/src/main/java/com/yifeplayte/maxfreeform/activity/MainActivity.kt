@@ -1,46 +1,27 @@
 package com.yifeplayte.maxfreeform.activity
 
-import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
-import cn.fkj233.ui.activity.MIUIActivity
-import cn.fkj233.ui.dialog.MIUIDialog
-import com.yifeplayte.maxfreeform.R
-import com.yifeplayte.maxfreeform.activity.pages.MainPage
-import com.yifeplayte.maxfreeform.activity.pages.RemoveFreeformTopBarListPage
-import com.yifeplayte.maxfreeform.activity.pages.UnlockForegroundPinWhitelistPage
-import com.yifeplayte.maxfreeform.utils.SharedPreferences.clearTemp
-import kotlin.system.exitProcess
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.yifeplayte.maxfreeform.activity.pages.Main
+import com.yifeplayte.maxfreeform.utils.Preferences
 
-class MainActivity : MIUIActivity() {
+class MainActivity : ComponentActivity() {
+    companion object {
+        lateinit var appContext: Context
+            private set
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        checkLSPosed()
         super.onCreate(savedInstanceState)
-    }
 
-    @Suppress("DEPRECATION")
-    @SuppressLint("WorldReadableFiles")
-    private fun checkLSPosed() {
-        try {
-            val sharedPreferences = getSharedPreferences("config", MODE_WORLD_READABLE)
-            sharedPreferences.clearTemp()
-            setSP(sharedPreferences)
-        } catch (exception: SecurityException) {
-            isLoad = false
-            MIUIDialog(this) {
-                setTitle(R.string.warning)
-                setMessage(R.string.not_support)
-                setCancelable(false)
-                setRButton(R.string.done) {
-                    exitProcess(0)
-                }
-            }.show()
-        }
-    }
+        appContext = this
+        Preferences.init(this)
 
-    init {
-        activity = this
-        registerPage(MainPage::class.java)
-        registerPage(UnlockForegroundPinWhitelistPage::class.java)
-        registerPage(RemoveFreeformTopBarListPage::class.java)
+        enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
+        setContent { Main() }
     }
 }

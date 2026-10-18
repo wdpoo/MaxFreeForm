@@ -10,8 +10,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.MaxFreeForm"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MaxFreeForm">
         <meta-data
             android:name="xposeddescription"
             android:value="@string/xposed_description" />
@@ -32,6 +32,11 @@
                 <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.AppListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MaxFreeForm" />
     </application>
 
 </manifest>

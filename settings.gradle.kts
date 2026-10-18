@@ -10,11 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://api.xposed.info/")
     }
 }
 
 include(":app")
-include(":blockmiui")
 rootProject.name = "MaxFreeForm"
-
