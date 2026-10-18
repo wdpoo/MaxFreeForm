@@ -24,14 +24,26 @@ object RemoveFreeformBottomBar : BaseHook() {
             ?.methodFinder()?.filterByName("needBottomCaption")?.first()?.createHook {
                 returnConstant(false)
             }
-        loadClassOrNull("com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.decoration.MiuiDecorationBottom")
-            ?.methodFinder()?.filterByName("needCaption")?.first()?.createHook {
-                before {
-                    val mWindowingMode = getObjectOrNullUntilSuperclassAs<Int>(it.thisObject, "mWindowingMode")
-                    if (mWindowingMode == 5) {
-                        it.result = false
+        loadClassOrNull("com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.decoration.MiuiDecorationBottom")?.let {
+            runCatching {
+                it.methodFinder().filterByName("needCaption").first().createHook {
+                    before {
+                        val mWindowingMode = getObjectOrNullUntilSuperclassAs<Int>(it.thisObject, "mWindowingMode")
+                        if (mWindowingMode == 5) {
+                            it.result = false
+                        }
                     }
                 }
             }
+            runCatching {
+                it.methodFinder().filterByName("shouldShowCaptionForWindowingMode").filterNonAbstract().first().createHook {
+                    before {
+                        if (getObjectOrNullUntilSuperclassAs<Int>(it.thisObject, "mWindowingMode") == 5) {
+                            it.result = false
+                        }
+                    }
+                }
+            }
+        }
     }
 }
