@@ -12,7 +12,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yifeplayte.maxfreeform.R
 import com.yifeplayte.maxfreeform.activity.MainActivity.Companion.appContext
-import com.yifeplayte.maxfreeform.utils.Preferences
+import com.yifeplayte.maxfreeform.utils.SharedPreferences
+import com.yifeplayte.maxfreeform.utils.reloadAllTargets
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -42,7 +43,8 @@ fun ResetConfigurationDialog(showDialog: MutableState<Boolean>) {
                 text = stringResource(R.string.done),
                 colors = ButtonDefaults.textButtonColorsPrimary(),
                 onClick = {
-                    Preferences.clear()
+                    SharedPreferences.mSP?.edit()?.clear()?.apply()
+                    reloadAllTargets()
                     Toast.makeText(
                         appContext, appContext.getString(R.string.finished), Toast.LENGTH_SHORT
                     ).show()

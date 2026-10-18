@@ -6,4 +6,4 @@ import com.yifeplayte.maxfreeform.hook.hooks.singlepackage.android.UnlockFreefor
 import com.yifeplayte.maxfreeform.hook.hooks.singlepackage.android.UnlockSideHideFreeform
 
 @Suppress("unused")
-object Android : BasePackage("android")
+object Android : BasePackage("system")

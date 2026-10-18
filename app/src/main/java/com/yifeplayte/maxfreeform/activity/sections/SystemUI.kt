@@ -16,12 +16,11 @@ import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 
-fun LazyListScope.systemUI(onRestart: (List<String>) -> Unit) {
+fun LazyListScope.systemUI() {
     item {
         SectionTitle(
             titleId = R.string.system_ui,
             packages = listOf("com.android.systemui"),
-            onRestart = onRestart,
         )
     }
     item {

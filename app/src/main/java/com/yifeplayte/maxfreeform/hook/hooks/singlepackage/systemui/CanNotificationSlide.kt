@@ -2,68 +2,76 @@ package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.systemui
 
 import android.app.PendingIntent
 import android.text.TextUtils
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadClassOrNull
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHook
-import com.github.kyuubiran.ezxhelper.Log
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNull
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullAs
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullUntilSuperclass
-import com.github.kyuubiran.ezxhelper.ObjectUtils.invokeMethodBestMatch
-import com.github.kyuubiran.ezxhelper.ObjectUtils.setObject
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
 import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
+import io.github.lingqiqi5211.ezhooktool.core.callMethod
+import io.github.lingqiqi5211.ezhooktool.core.findMethodOrNull
+import io.github.lingqiqi5211.ezhooktool.core.getFieldOrNull
+import io.github.lingqiqi5211.ezhooktool.core.getFieldOrNullAs
+import io.github.lingqiqi5211.ezhooktool.core.loadClassOrNull
+import io.github.lingqiqi5211.ezhooktool.core.putField
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object CanNotificationSlide : BaseHook() {
     override val key = "can_notification_slide"
     override fun hook() {
-        loadClassOrNull("com.android.systemui.statusbar.notification.NotificationSettingsManager")?.methodFinder()
-            ?.filterByName("canSlide")?.firstOrNull()?.createHook {
-                returnConstant(true)
-            }
+        loadClassOrNull("com.android.systemui.statusbar.notification.NotificationSettingsManager")
+            ?.findMethodOrNull { name("canSlide") }
+            ?.createHook { returnConstant(true) }
         if (!IS_HYPER_OS) return
-        loadClassOrNull("com.android.systemui.statusbar.notification.row.MiuiExpandableNotificationRow")?.methodFinder()
-            ?.filterByName("updateMiniWindowBar")?.first()?.createHook {
-                before {
+        loadClassOrNull("com.android.systemui.statusbar.notification.row.MiuiExpandableNotificationRow")
+            ?.findMethodOrNull { name("updateMiniWindowBar") }
+            ?.createHook {
+                before { param ->
                     val miniWindowTargetPkg =
-                        invokeMethodBestMatch(it.thisObject, "getMiniWindowTargetPkg") as String?
+                        param.thisObject.callMethod("getMiniWindowTargetPkg") as? String
                             ?: return@before
                     val mAppMiniWindowManager =
-                        invokeMethodBestMatch(it.thisObject, "getMAppMiniWindowManager")!!
-                    val notificationSettingsManager = getObjectOrNull(
-                        mAppMiniWindowManager, "notificationSettingsManager"
-                    )!!
-                    val mAllowNotificationSlide = getObjectOrNullAs<MutableList<String>>(
-                        notificationSettingsManager, "mAllowNotificationSlide"
-                    )!!
+                        param.thisObject.callMethod("getMAppMiniWindowManager")
+                            ?: return@before
+                    val notificationSettingsManager =
+                        mAppMiniWindowManager.getFieldOrNull("notificationSettingsManager")
+                            ?: return@before
+                    val mAllowNotificationSlide = notificationSettingsManager
+                        .getFieldOrNullAs<MutableList<String>>("mAllowNotificationSlide")
+                        ?: return@before
                     if (miniWindowTargetPkg !in mAllowNotificationSlide) {
                         mAllowNotificationSlide.add(miniWindowTargetPkg)
                     }
                 }
             }
-        loadClassOrNull("com.android.systemui.statusbar.notification.row.ExpandableNotificationRowInjector")?.methodFinder()
-            ?.filterByName("updateMiniWindowBar")?.first()?.createHook {
-                before {
+        loadClassOrNull("com.android.systemui.statusbar.notification.row.ExpandableNotificationRowInjector")
+            ?.findMethodOrNull { name("updateMiniWindowBar") }
+            ?.createHook {
+                before { param ->
                     val miniWindowTargetPkg = run {
-                        val pendingIntent = invokeMethodBestMatch(it.thisObject, "getPendingIntent") as PendingIntent?
-                        val view = getObjectOrNullUntilSuperclass(it.thisObject, "view")!!
-                        val entry = invokeMethodBestMatch(view, "getEntry")!!
-                        val notification = getObjectOrNull(entry, "mSbn")!!
-                        val mPkgName = getObjectOrNullAs<String>(notification, "mPkgName")
-                        val opPkg = invokeMethodBestMatch(notification, "getOpPkg") as String?
+                        val pendingIntent =
+                            param.thisObject.callMethod("getPendingIntent") as? PendingIntent
+                        val view = param.thisObject.getFieldOrNull("view") ?: return@run null
+                        val entry = view.callMethod("getEntry") ?: return@run null
+                        val notification = entry.getFieldOrNull("mSbn") ?: return@run null
+                        val mPkgName = notification.getFieldOrNullAs<String>("mPkgName")
+                        val opPkg = notification.callMethod("getOpPkg") as? String
                         if (!TextUtils.equals(mPkgName, opPkg)) {
                             mPkgName
                         } else {
                             pendingIntent?.creatorPackage
                         }
                     } ?: return@before
-                    val appMiniWindowManager = getObjectOrNull(it.thisObject, "appMiniWindowManager")!!
-                    val notificationSettingsManager = getObjectOrNull(appMiniWindowManager, "notificationSettingsManager")!!
-                    val mAllowNotificationSlide = getObjectOrNullAs<List<String>>(notificationSettingsManager, "mAllowNotificationSlide")!!
+                    val appMiniWindowManager =
+                        param.thisObject.getFieldOrNull("appMiniWindowManager") ?: return@before
+                    val notificationSettingsManager =
+                        appMiniWindowManager.getFieldOrNull("notificationSettingsManager")
+                            ?: return@before
+                    val mAllowNotificationSlide = notificationSettingsManager
+                        .getFieldOrNullAs<List<String>>("mAllowNotificationSlide")
+                        ?: return@before
                     if (miniWindowTargetPkg in mAllowNotificationSlide) return@before
-                    val newAllowNotificationSlide = mAllowNotificationSlide + miniWindowTargetPkg
-                    setObject(notificationSettingsManager, "mAllowNotificationSlide", newAllowNotificationSlide)
+                    notificationSettingsManager.putField(
+                        "mAllowNotificationSlide",
+                        mAllowNotificationSlide + miniWindowTargetPkg,
+                    )
                 }
             }
     }

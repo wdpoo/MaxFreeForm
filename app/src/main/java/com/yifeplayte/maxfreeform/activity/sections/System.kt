@@ -12,16 +12,15 @@ import com.yifeplayte.maxfreeform.activity.AppListActivity
 import com.yifeplayte.maxfreeform.activity.ui.SPSwitch
 import com.yifeplayte.maxfreeform.activity.ui.SectionTitle
 import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
-import com.yifeplayte.maxfreeform.utils.SYSTEM_SERVER_PACKAGE_NAME
+import com.yifeplayte.maxfreeform.hook.utils.SYSTEM_SERVER_PACKAGE_NAME
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 
-fun LazyListScope.system(onRestart: (List<String>) -> Unit) {
+fun LazyListScope.system() {
     item {
         SectionTitle(
             titleId = R.string.system,
             packages = listOf(SYSTEM_SERVER_PACKAGE_NAME),
-            onRestart = onRestart,
         )
     }
     item {

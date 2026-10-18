@@ -1,1 +1,8 @@
--keep class com.yifeplayte.maxfreeform.hook.MainHook { <init>(); }-keep class * extends com.yifeplayte.maxfreeform.hook.hooks.* {    <init>();    com.yifeplayte.maxfreeform.hook.hooks.** INSTANCE;}-keepattributes RuntimeVisibleAnnotations
+-keep class com.yifeplayte.maxfreeform.hook.MainHook { <init>(); }
+-keep class * extends com.yifeplayte.maxfreeform.hook.hooks.* {
+    <init>();
+    com.yifeplayte.maxfreeform.hook.hooks.** INSTANCE;
+}
+-keepattributes RuntimeVisibleAnnotations
+-dontwarn androidx.window.extensions.**
+-dontwarn androidx.window.sidecar.**

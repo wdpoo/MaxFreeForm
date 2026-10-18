@@ -40,10 +40,10 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/**"
             excludes += "/kotlin/**"
             excludes += "/*.txt"
             excludes += "/*.bin"
+            merges += "META-INF/xposed/*"
         }
     }
 
@@ -62,8 +62,12 @@ androidComponents {
 }
 
 dependencies {
-    compileOnly("de.robv.android.xposed:api:82")
-    implementation("com.github.kyuubiran:EzXHelper:2.2.1")
+    compileOnly("io.github.libxposed:api:102.0.0")
+    implementation("io.github.libxposed:service:102.0.0")
+    implementation("io.github.lingqiqi5211.ezhooktool:core:1.1.3")
+    implementation("io.github.lingqiqi5211.ezhooktool:hook-xposed-102:1.1.3")
+    implementation("com.github.topjohnwu.libsu:core:6.0.0")
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:6.1")
     implementation("io.github.ranlee1:jpinyin:1.0.1")
 
     implementation("androidx.core:core-ktx:1.18.0")

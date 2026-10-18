@@ -1,10 +1,10 @@
 package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.android
 
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadClass
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHook
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHooks
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
+import io.github.lingqiqi5211.ezhooktool.core.findAllMethods
+import io.github.lingqiqi5211.ezhooktool.core.findMethodOrNull
+import io.github.lingqiqi5211.ezhooktool.core.loadClass
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object UnlockFreeformQuantityLimit : BaseHook() {
@@ -13,16 +13,15 @@ object UnlockFreeformQuantityLimit : BaseHook() {
     override fun hook() {
         val clazzMiuiFreeFormStackDisplayStrategy =
             loadClass("com.android.server.wm.MiuiFreeFormStackDisplayStrategy")
-        clazzMiuiFreeFormStackDisplayStrategy.methodFinder().filter {
-            name in setOf(
-                "getMaxMiuiFreeFormStackCount", "getMaxMiuiFreeFormStackCountForFlashBack"
-            )
-        }.toList().createHooks {
-            returnConstant(256)
+        clazzMiuiFreeFormStackDisplayStrategy.findAllMethods { notAbstract() }
+            .filter {
+                it.name == "getMaxMiuiFreeFormStackCount" ||
+                        it.name == "getMaxMiuiFreeFormStackCountForFlashBack"
+            }.forEach { method ->
+            method.createHook { returnConstant(256) }
         }
-        clazzMiuiFreeFormStackDisplayStrategy.methodFinder().filterByName("shouldStopStartFreeform")
-            .firstOrNull()?.createHook {
-                returnConstant(false)
-            }
+        clazzMiuiFreeFormStackDisplayStrategy
+            .findMethodOrNull { name("shouldStopStartFreeform") }
+            ?.createHook { returnConstant(false) }
     }
 }

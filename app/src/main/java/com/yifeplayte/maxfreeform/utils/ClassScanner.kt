@@ -1,46 +1,44 @@
 package com.yifeplayte.maxfreeform.utils
 
-import com.github.kyuubiran.ezxhelper.Log
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNull
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullAs
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullUntilSuperclass
-import com.github.kyuubiran.ezxhelper.ObjectUtils.invokeMethodBestMatch
+import android.util.Log
+import io.github.lingqiqi5211.ezhooktool.core.callMethod
+import io.github.lingqiqi5211.ezhooktool.core.getFieldOrNull
+import io.github.lingqiqi5211.ezhooktool.core.getFieldOrNullAs
 import java.util.Enumeration
 
 /**
- * 包扫描工具
+ * 通过反射扫描模块自身 dex 中指定包名下的单例对象。
  */
 object ClassScanner {
-    /**
-     * 在某包下扫描特定类型的 Kotlin object
-     *
-     * @param T 需要扫描的目标类
-     * @param packageName 包名
-     * @param classLoader 类加载器
-     * @return object 实例
-     */
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T> scanObjectOf(
         packageName: String, classLoader: ClassLoader = ClassScanner::class.java.classLoader!!
     ): List<T> = runCatching {
-        val dexPathList = getObjectOrNullUntilSuperclass(classLoader, "pathList")
-        val dexElements = dexPathList?.let { getObjectOrNullAs<Array<*>>(it, "dexElements") }
+        val dexPathList = classLoader.getFieldOrNull("pathList") ?: return@runCatching emptyList()
+        val dexElements = dexPathList.getFieldOrNullAs<Array<*>>("dexElements")
+            ?: return@runCatching emptyList()
 
-        dexElements?.flatMap { element ->
-            val dexFile = element?.let { getObjectOrNull(it, "dexFile") }
-            val entries =
-                dexFile?.let { invokeMethodBestMatch(it, "entries") } as? Enumeration<String>
-
-            entries?.toList()?.filter { it.startsWith(packageName) }?.mapNotNull { entry ->
-                runCatching {
-                    val entryClass = Class.forName(entry, true, classLoader)
-                    if (entryClass.name.contains("$") || !T::class.java.isAssignableFrom(entryClass)) null
-                    else entryClass.fields.singleOrNull { it.name == "INSTANCE" }?.get(null) as T?
-                }.getOrNull()
-            } ?: emptyList()
-        }?.distinct() ?: emptyList()
+        dexElements.asSequence().flatMap { element ->
+            val dexFile = element?.getFieldOrNull("dexFile") ?: return@flatMap emptySequence()
+            val entries = dexFile.callMethod("entries") as? Enumeration<String>
+                ?: return@flatMap emptySequence()
+            entries.asSequence().filter {
+                val len = packageName.length
+                return@filter it.startsWith(packageName)
+                        && (it.length == len || it[len] == '.')
+                        && !it.contains("$")
+            }
+        }.mapNotNull { entry ->
+            try {
+                val entryClass = Class.forName(entry, false, classLoader)
+                if (!T::class.java.isAssignableFrom(entryClass)) null
+                else entryClass.getField("INSTANCE").get(null) as T?
+            } catch (_: Throwable) {
+                null
+            }
+        }.toList().distinct()
     }.getOrElse {
-        Log.e("ClassScanner crashed!", it)
+        Log.e("ClassScanner", "scanObjectOf crashed", it)
         emptyList()
     }
 }

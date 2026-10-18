@@ -41,6 +41,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -73,10 +74,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.graphics.drawable.toBitmap
+import com.yifeplayte.maxfreeform.App
 import com.yifeplayte.maxfreeform.R
 import com.yifeplayte.maxfreeform.activity.ui.miuixBlurEffect
 import com.yifeplayte.maxfreeform.activity.ui.rememberMiuixBlurBackdrop
-import com.yifeplayte.maxfreeform.utils.Preferences
+import com.yifeplayte.maxfreeform.utils.SharedPreferences
+import com.yifeplayte.maxfreeform.utils.reloadAllTargets
 import io.github.ranlee1.jpinyin.PinyinFormat.WITHOUT_TONE
 import io.github.ranlee1.jpinyin.PinyinHelper.convertToPinyinString
 import kotlinx.coroutines.Dispatchers
@@ -117,7 +120,6 @@ class AppListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Preferences.ensureInit(this)
         val key = intent.getStringExtra(EXTRA_KEY) ?: run {
             finish()
             return
@@ -198,7 +200,22 @@ private fun AppListScreen(
     var apps by remember { mutableStateOf<List<AppEntry>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var loadFailed by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(Preferences.getStringSet(key, emptySet())) }
+    var serviceReady by remember { mutableStateOf(App.mService != null) }
+    var selected by remember { mutableStateOf<Set<String>>(emptySet()) }
+    DisposableEffect(Unit) {
+        val listener = object : App.ServiceStateListener {
+            override fun onServiceStateChanged(service: io.github.libxposed.service.XposedService?) {
+                serviceReady = service != null
+            }
+        }
+        App.addServiceStateListener(listener, notifyImmediately = true)
+        onDispose { App.removeServiceStateListener(listener) }
+    }
+    LaunchedEffect(serviceReady, key) {
+        if (serviceReady) {
+            selected = SharedPreferences.mSP?.getStringSet(key, emptySet()) ?: emptySet()
+        }
+    }
     val lazyListState = rememberLazyListState()
     val scrollBehavior = MiuixScrollBehavior()
     val showFloating by remember {
@@ -290,7 +307,10 @@ private fun AppListScreen(
 
     val persistSelection: (Set<String>) -> Unit = { next ->
         selected = next
-        Preferences.putStringSet(key, next)
+        SharedPreferences.mSP?.edit()
+            ?.putStringSet(key, HashSet(next))
+            ?.apply()
+        reloadAllTargets()
     }
 
     Scaffold(
@@ -529,6 +549,7 @@ private fun AppListScreen(
                                 checked = checked,
                                 shape = shape,
                                 showPackageName = showPackageName,
+                                enabled = serviceReady,
                                 onToggle = { isChecked ->
                                     persistSelection(
                                         if (isChecked) {
@@ -733,6 +754,7 @@ private fun AppListItem(
     checked: Boolean,
     shape: Shape,
     showPackageName: Boolean,
+    enabled: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
     Box(
@@ -744,7 +766,7 @@ private fun AppListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = { onToggle(!checked) })
+                .clickable(enabled = enabled, onClick = { onToggle(!checked) })
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -783,6 +805,7 @@ private fun AppListItem(
             Switch(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 checked = checked,
+                enabled = enabled,
                 onCheckedChange = onToggle,
             )
         }

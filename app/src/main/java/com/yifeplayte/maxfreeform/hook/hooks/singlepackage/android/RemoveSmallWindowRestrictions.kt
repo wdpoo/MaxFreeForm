@@ -1,77 +1,81 @@
 package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.android
 
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadClass
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHooks
-import com.github.kyuubiran.ezxhelper.ObjectHelper.Companion.objectHelper
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
+import io.github.lingqiqi5211.ezhooktool.core.findAllMethods
+import io.github.lingqiqi5211.ezhooktool.core.getFieldOrNull
+import io.github.lingqiqi5211.ezhooktool.core.loadClass
+import io.github.lingqiqi5211.ezhooktool.core.putField
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object RemoveSmallWindowRestrictions : BaseHook() {
     override val key = "remove_small_window_restrictions"
     override fun hook() {
         runCatching {
-            loadClass("android.app.ActivityTaskManager").methodFinder()
-                .filterByName("supportsSplitScreen").filterNonAbstract().toList().createHooks {
-                    returnConstant(true)
-                }
+            loadClass("android.app.ActivityTaskManager")
+                .findAllMethods { notAbstract() }
+                .filter { it.name == "supportsSplitScreen" }
+                .forEach { it.createHook { returnConstant(true) } }
         }
 
         runCatching {
-            loadClass("com.android.server.wm.ActivityTaskManagerService").methodFinder()
-                .filterByName("retrieveSettings").filterNonAbstract().toList().createHooks {
-                    after {
-                        it.thisObject.objectHelper()
-                            .setObject("mDevEnableNonResizableMultiWindow", true)
+            loadClass("com.android.server.wm.ActivityTaskManagerService")
+                .findAllMethods { name("retrieveSettings"); notAbstract() }
+                .forEach { method ->
+                    method.createHook {
+                        after { param ->
+                            param.thisObject!!.putField(
+                                "mDevEnableNonResizableMultiWindow",
+                                true,
+                            )
+                        }
                     }
                 }
         }
 
         runCatching {
-            loadClass("com.android.server.wm.WindowManagerService\$SettingsObserver").methodFinder()
+            loadClass("com.android.server.wm.WindowManagerService\$SettingsObserver")
+                .findAllMethods { notAbstract() }
                 .filter {
-                    name in setOf("updateDevEnableNonResizableMultiWindow", "onChange")
-                }.filterNonAbstract().toList().createHooks {
-                    after {
-                        val this0 = it.thisObject.objectHelper().getObjectOrNull("this\$0")!!
-                        val mAtmService = this0.objectHelper().getObjectOrNull("mAtmService")!!
-                        mAtmService.objectHelper()
-                            .setObject("mDevEnableNonResizableMultiWindow", true)
+                    it.name == "updateDevEnableNonResizableMultiWindow" ||
+                            it.name == "onChange"
+                }.forEach { method ->
+                    method.createHook {
+                        after { param ->
+                            val this0 = param.thisObject!!.getFieldOrNull("this\$0") ?: return@after
+                            val mAtmService = this0.getFieldOrNull("mAtmService") ?: return@after
+                            mAtmService!!.putField("mDevEnableNonResizableMultiWindow", true)
+                        }
                     }
                 }
         }
 
         runCatching {
-            loadClass("android.util.MiuiMultiWindowUtils").methodFinder()
-                .filterByName("isForceResizeable").filterNonAbstract().toList().createHooks {
-                    returnConstant(true)
-                }
+            loadClass("android.util.MiuiMultiWindowUtils")
+                .findAllMethods { name("isForceResizeable"); notAbstract() }
+                .forEach { it.createHook { returnConstant(true) } }
         }
 
         runCatching {
-            loadClass("android.util.MiuiMultiWindowAdapter").methodFinder()
-                .filter { name.contains("BlackList", true) }
-                .filterByAssignableReturnType(MutableList::class.java).filterNonAbstract().toList()
-                .apply {
-                    createHooks {
-                        returnConstant(mutableListOf<String>())
-                    }
-                }
+            loadClass("android.util.MiuiMultiWindowAdapter")
+                .findAllMethods { notAbstract() }
+                .filter {
+                    it.name.contains("BlackList", true) &&
+                            MutableList::class.java.isAssignableFrom(it.returnType)
+                }.forEach { it.createHook { returnConstant(mutableListOf<String>()) } }
         }
 
         // Author: LittleTurtle2333
         runCatching {
-            loadClass("com.android.server.wm.Task").methodFinder().filterByName("isResizeable")
-                .filterNonAbstract().toList().createHooks {
-                    returnConstant(true)
-                }
+            loadClass("com.android.server.wm.Task")
+                .findAllMethods { name("isResizeable"); notAbstract() }
+                .forEach { it.createHook { returnConstant(true) } }
         }
 
         runCatching {
-            loadClass("android.util.MiuiMultiWindowUtils").methodFinder()
-                .filterByName("supportFreeform").filterNonAbstract().toList().createHooks {
-                    returnConstant(true)
-                }
+            loadClass("android.util.MiuiMultiWindowUtils")
+                .findAllMethods { name("supportFreeform"); notAbstract() }
+                .forEach { it.createHook { returnConstant(true) } }
         }
     }
 }

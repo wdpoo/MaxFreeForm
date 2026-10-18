@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.yifeplayte.maxfreeform.activity.pages.Main
-import com.yifeplayte.maxfreeform.utils.Preferences
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -18,10 +17,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         appContext = this
-        Preferences.init(this)
 
-        enableEdgeToEdge()
-        window.isNavigationBarContrastEnforced = false
-        setContent { Main() }
+        setContent {
+            enableEdgeToEdge()
+            window.isNavigationBarContrastEnforced = false  // Xiaomi moment, this code must be here
+            Main()
+        }
     }
 }

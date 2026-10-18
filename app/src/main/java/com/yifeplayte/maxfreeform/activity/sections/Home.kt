@@ -10,14 +10,13 @@ import com.yifeplayte.maxfreeform.activity.ui.SectionTitle
 import com.yifeplayte.maxfreeform.utils.Build.HYPER_OS_VERSION_CODE
 import top.yukonga.miuix.kmp.basic.Card
 
-fun LazyListScope.home(onRestart: (List<String>) -> Unit) {
+fun LazyListScope.home() {
     // HyperOS 4 的 com.miui.home 是 native 进程，不加载 Java hook
     if (HYPER_OS_VERSION_CODE >= 4) return
     item {
         SectionTitle(
             titleId = R.string.miui_home,
             packages = listOf("com.miui.home"),
-            onRestart = onRestart,
         )
     }
     item {

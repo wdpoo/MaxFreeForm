@@ -1,10 +1,10 @@
 package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.systemui
 
-import com.github.kyuubiran.ezxhelper.ClassUtils
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHooks
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
 import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
+import io.github.lingqiqi5211.ezhooktool.core.findAllMethods
+import io.github.lingqiqi5211.ezhooktool.core.loadClass
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object UnlockMultipleTask : BaseHook() {
@@ -12,10 +12,9 @@ object UnlockMultipleTask : BaseHook() {
     override val isEnabled get() = IS_HYPER_OS and super.isEnabled
     override fun hook() {
         runCatching {
-            ClassUtils.loadClass("android.app.ActivityTaskManager").methodFinder()
-                .filterByName("supportMultipleTask").toList().createHooks {
-                    returnConstant(true)
-                }
+            loadClass("android.app.ActivityTaskManager")
+                .findAllMethods { name("supportMultipleTask") }
+                .forEach { it.createHook { returnConstant(true) } }
         }
     }
 }

@@ -1,45 +1,45 @@
 package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.systemui
 
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadClassOrNull
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadFirstClassOrNull
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHook
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNull
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullAs
-import com.github.kyuubiran.ezxhelper.ObjectUtils.getObjectOrNullUntilSuperclassAs
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
 import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
-import de.robv.android.xposed.XC_MethodReplacement.returnConstant
+import io.github.lingqiqi5211.ezhooktool.core.findFieldOrNull
+import io.github.lingqiqi5211.ezhooktool.core.findMethodOrNull
+import io.github.lingqiqi5211.ezhooktool.core.getAs
+import io.github.lingqiqi5211.ezhooktool.core.loadClassOrNull
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object RemoveFreeformBottomBar : BaseHook() {
     override val key = "remove_freeform_bottom_bar"
     override val isEnabled get() = IS_HYPER_OS and super.isEnabled
     override fun hook() {
-        loadClassOrNull("com.android.wm.shell.miuimultiwinswitch.miuiwindowdecor.MiuiBaseWindowDecoration")?.methodFinder()
-            ?.filterByName("createBottomCaption")?.first()?.createHook {
-                returnConstant(null)
-            }
+        loadClassOrNull("com.android.wm.shell.miuimultiwinswitch.miuiwindowdecor.MiuiBaseWindowDecoration")
+            ?.findMethodOrNull { name("createBottomCaption") }
+            ?.createHook { returnConstant(null) }
         loadClassOrNull("com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.MiuiBottomDecoration")
-            ?.methodFinder()?.filterByName("needBottomCaption")?.first()?.createHook {
-                returnConstant(false)
-            }
+            ?.findMethodOrNull { name("needBottomCaption") }
+            ?.createHook { returnConstant(false) }
         loadClassOrNull("com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.decoration.MiuiDecorationBottom")?.let {
             runCatching {
-                it.methodFinder().filterByName("needCaption").first().createHook {
-                    before {
-                        val mWindowingMode = getObjectOrNullUntilSuperclassAs<Int>(it.thisObject, "mWindowingMode")
+                it.findMethodOrNull { name("needCaption") }?.createHook {
+                    before { param ->
+                        val mWindowingMode = param.thisObject.javaClass
+                            .findFieldOrNull { name("mWindowingMode"); findAndSuper() }
+                            ?.getAs<Int>(param.thisObject)
                         if (mWindowingMode == 5) {
-                            it.result = false
+                            param.result = false
                         }
                     }
                 }
             }
             runCatching {
-                it.methodFinder().filterByName("shouldShowCaptionForWindowingMode").filterNonAbstract().first().createHook {
-                    before {
-                        if (getObjectOrNullUntilSuperclassAs<Int>(it.thisObject, "mWindowingMode") == 5) {
-                            it.result = false
+                it.findMethodOrNull { name("shouldShowCaptionForWindowingMode") }?.createHook {
+                    before { param ->
+                        val mWindowingMode = param.thisObject.javaClass
+                            .findFieldOrNull { name("mWindowingMode"); findAndSuper() }
+                            ?.getAs<Int>(param.thisObject)
+                        if (mWindowingMode == 5) {
+                            param.result = false
                         }
                     }
                 }

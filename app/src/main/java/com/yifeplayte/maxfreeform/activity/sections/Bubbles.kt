@@ -15,7 +15,7 @@ import com.yifeplayte.maxfreeform.utils.Terminal
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 
-fun LazyListScope.bubbles(onRestart: (List<String>) -> Unit) {
+fun LazyListScope.bubbles() {
     item {
         SectionTitle(
             titleId = R.string.bubbles,
@@ -24,7 +24,6 @@ fun LazyListScope.bubbles(onRestart: (List<String>) -> Unit) {
             } else {
                 listOf("com.miui.securitycenter")
             },
-            onRestart = onRestart,
         )
     }
     item {

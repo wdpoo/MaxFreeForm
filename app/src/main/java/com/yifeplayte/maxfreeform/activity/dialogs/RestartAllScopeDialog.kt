@@ -14,7 +14,7 @@ import com.yifeplayte.maxfreeform.R
 import com.yifeplayte.maxfreeform.activity.MainActivity.Companion.appContext
 import com.yifeplayte.maxfreeform.hook.PACKAGE_NAME_HOOKED
 import com.yifeplayte.maxfreeform.utils.Build.HYPER_OS_VERSION_CODE
-import com.yifeplayte.maxfreeform.utils.SYSTEM_SERVER_PACKAGE_NAME
+import com.yifeplayte.maxfreeform.hook.utils.SYSTEM_SERVER_PACKAGE_NAME
 import com.yifeplayte.maxfreeform.utils.Terminal
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton

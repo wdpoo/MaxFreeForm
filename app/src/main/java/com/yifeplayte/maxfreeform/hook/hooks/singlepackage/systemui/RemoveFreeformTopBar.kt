@@ -1,36 +1,39 @@
 package com.yifeplayte.maxfreeform.hook.hooks.singlepackage.systemui
 
 import android.content.ComponentName
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadClassOrNull
-import com.github.kyuubiran.ezxhelper.ClassUtils.loadFirstClassOrNull
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHook
-import com.github.kyuubiran.ezxhelper.HookFactory.`-Static`.createHooks
-import com.github.kyuubiran.ezxhelper.finders.MethodFinder.`-Static`.methodFinder
 import com.yifeplayte.maxfreeform.hook.hooks.BaseHook
 import com.yifeplayte.maxfreeform.utils.Build.IS_HYPER_OS
+import io.github.lingqiqi5211.ezhooktool.core.findMethodOrNull
+import io.github.lingqiqi5211.ezhooktool.core.findAllMethods
+import io.github.lingqiqi5211.ezhooktool.core.loadClassFirstOrNull
+import io.github.lingqiqi5211.ezhooktool.core.loadClassOrNull
+import io.github.lingqiqi5211.ezhooktool.xposed.dsl.createHook
 
 @Suppress("unused")
 object RemoveFreeformTopBar : BaseHook() {
     override val key = "remove_freeform_top_bar"
     override val isEnabled get() = IS_HYPER_OS and super.isEnabled
     override fun hook() {
-        loadClassOrNull("com.android.wm.shell.miuimultiwinswitch.miuiwindowdecor.MiuiBaseWindowDecoration")?.methodFinder()
-            ?.filterByName("getBooleanProperty")
-            ?.filterByAssignableParamTypes(String::class.java, ComponentName::class.java)?.first()
-            ?.createHook {
-                before {
-                    if (it.args[0] != "miui.window.DOT_ENABLED") return@before
-                    it.result = false
+        loadClassOrNull("com.android.wm.shell.miuimultiwinswitch.miuiwindowdecor.MiuiBaseWindowDecoration")
+            ?.findMethodOrNull {
+                name("getBooleanProperty")
+                params(String::class.java, ComponentName::class.java)
+            }?.createHook {
+                before { param ->
+                    if (param.args[0] != "miui.window.DOT_ENABLED") return@before
+                    param.result = false
                 }
             }
-        loadFirstClassOrNull(
+        loadClassFirstOrNull(
             "com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.MiuiTopDecoration",
             "com.android.wm.shell.multitasking.miuimultiwinswitch.miuiwindowdecor.decoration.MiuiDecorationDot",
-        )?.methodFinder()
-            ?.filterByName("getBooleanProperty")?.filterNonAbstract()?.toList()?.createHooks {
-                before {
-                    it.result = false
-                }
+        )?.findAllMethods {
+            name("getBooleanProperty")
+            notAbstract()
+        }?.forEach { method ->
+            method.createHook {
+                before { param -> param.result = false }
             }
+        }
     }
 }

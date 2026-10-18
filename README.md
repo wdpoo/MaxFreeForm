@@ -11,7 +11,15 @@ Unlock multi freeform limits for MIUI / HyperOS devices
 
 ##### Apache License 2.0
 
+[libxposed/api](https://github.com/libxposed/api)
+
+[topjohnwu/libsu](https://github.com/topjohnwu/libsu)
+
 [miuix](https://github.com/miuix-kotlin-multiplatform/miuix)
+
+##### MIT License
+
+[lingqiqi5211/EzHookTool](https://github.com/lingqiqi5211/EzHookTool)
 
 ##### GNU General Public License v3.0
 
