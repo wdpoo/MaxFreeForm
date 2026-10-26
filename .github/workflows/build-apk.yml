@@ -1,5 +1,5 @@
 # 由 githup App 生成（Android Gradle）· 2026-10-26
-# 修改说明：首次生成，未做改动
+# 修改说明：none
 # 每个步骤都带注释，可直接修改；改完请在上方填写修改说明再保存。
 
 name: Build APK
@@ -9,7 +9,7 @@ on:
     inputs:
       app_name:
         description: 安装包名称
-        default: 'app'
+        default: 'formchange'
       version_name:
         description: 版本号（versionName）
         default: '1.0.0'
