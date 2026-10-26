@@ -77,8 +77,7 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
-            output.outputFileName.set("${rootProject.name}-${output.versionName.get()}.apk")
-        }
+            output.outputFileName.set("${rootProject.name}-${output.versionName.get()}.apk")}
     }
 }
 
